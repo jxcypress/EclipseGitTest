@@ -5,7 +5,7 @@ public class EclipseGitTest2 {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		//git@github.com:jxcypress/EclipseGitTest.git
-		//hello world
+		//hello world ,git test
 	}
 
 }
