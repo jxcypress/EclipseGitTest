@@ -1,0 +1,92 @@
+package com.carnation.portal.utils;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.CharEncoding;
+
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.DESKeySpec;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
+/**
+ * @author cypress
+ *         <p>DES对称加密算法</p>
+ */
+public class DesUtils {
+
+    private static String KEY_STR = "myStaticKeyForGen";
+    private static final java.lang.String DES_ALGORITHM = "DES";
+
+    /**
+     * 获得密钥
+     * <p>
+     * <p> SecureRandom 实现完全随操作系统本身的內部状态，除非调用方在调用 getInstance 方法之后又调用了 setSeed 方法；
+     * 该实现在 windows 上每次生成的 key 都相同，但是在 solaris 或部分 linux 系统上则不同。 </p>
+     * <p>这段代码使用SecretKeyFactory,实现方法generateKey
+     * <p>使在linux上加密后的结果和在windows上是相同的；</p>
+     *
+     * @param secretKey
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeyException
+     * @throws InvalidKeySpecException
+     */
+    private static SecretKey generateKey(String secretKey) throws NoSuchAlgorithmException, InvalidKeyException, InvalidKeySpecException {
+
+        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(DES_ALGORITHM);
+        DESKeySpec keySpec = new DESKeySpec(secretKey.getBytes());
+        keyFactory.generateSecret(keySpec);
+        return keyFactory.generateSecret(keySpec);
+    }
+
+    /**
+     * 对字符串进行DES加密，返回DES和BASE64编码的加密字符串
+     *
+     * @param encode 用于加密的文本
+     * @return 加密后的文本
+     */
+    public static String encryptString(String encode) {
+        try {
+            byte[] strBytes = encode.getBytes(CharEncoding.UTF_8);
+            Cipher cipher = Cipher.getInstance(DES_ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, generateKey(KEY_STR));
+            byte[] encryptStrBytes = cipher.doFinal(strBytes);
+            return Base64.encodeBase64String(encryptStrBytes);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 对BASE64和DES算法编码的加密字符串进行解密，返回解密后的字符串
+     *
+     * @param decode 用于解密的文本
+     * @return 解密后的文本
+     */
+    public static String decryptString(String decode) {
+        try {
+            byte[] strBytes = Base64.decodeBase64(decode);
+            Cipher cipher = Cipher.getInstance(DES_ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, generateKey(KEY_STR));
+            byte[] decryptStrBytes = cipher.doFinal(strBytes);
+            return new String(decryptStrBytes, CharEncoding.UTF_8);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void main(String[] args) {
+
+        String str = "123456";
+        String encryptStr = encryptString(str);
+        String descryptStr = decryptString(encryptStr);
+
+        System.out.println("encryptStr: " + encryptStr);
+        System.out.println("descryptStr: " + descryptStr);
+    }
+}
